@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IMPERE — Acesso Confirmado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Playfair+Display:ital,wght@1,500;1,600&display=swap" rel="stylesheet">
+<style>
+:root{
+--black:#0a0a0a;
+--black-pure:#000000;
+--white:#ffffff;
+--gold:#d4af37;
+--gold-soft:#e8c766;
+--spotify:#1DB954;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+background:var(--black);
+color:var(--white);
+font-family:'Montserrat',sans-serif;
+min-height:100vh;
+-webkit-font-smoothing:antialiased;
+padding:28px 18px 60px;
+}
+.wrap{max-width:480px;margin:0 auto;}
+
+/* HEADER */
+.brand{text-align:center;font-size:0.78rem;letter-spacing:4px;color:var(--gold);margin-bottom:34px;font-weight:600;}
+.head{text-align:center;margin-bottom:38px;}
+.head h1{
+font-size:1.9rem;font-weight:800;
+background:linear-gradient(135deg,var(--gold-soft),var(--gold));
+-webkit-background-clip:text;background-clip:text;color:transparent;
+margin-bottom:12px;letter-spacing:0.3px;
+}
+.head p{color:rgba(255,255,255,0.65);font-size:0.95rem;line-height:1.6;max-width:360px;margin:0 auto;}
+
+/* FORM CARD */
+.form-card{
+background:#111111;
+border:1px solid rgba(212,175,55,0.25);
+border-radius:18px;
+padding:28px 22px;
+box-shadow:0 0 40px -10px rgba(212,175,55,0.15);
+}
+.field{margin-bottom:20px;}
+.field label{
+display:block;font-size:0.82rem;font-weight:600;color:var(--gold-soft);
+margin-bottom:9px;letter-spacing:0.2px;
+}
+input[type=text],input[type=url],textarea,select{
+width:100%;background:#050505;
+border:1px solid rgba(212,175,55,0.3);
+color:var(--white);border-radius:10px;
+padding:14px 15px;font-family:'Montserrat',sans-serif;font-size:0.94rem;
+outline:none;transition:all .2s ease;
+}
+input::placeholder, textarea::placeholder{color:rgba(255,255,255,0.35);}
+input:focus, textarea:focus, select:focus{
+border-color:var(--gold);
+box-shadow:0 0 0 3px rgba(212,175,55,0.12);
+}
+textarea{resize:vertical;min-height:100px;line-height:1.5;}
+select{
+appearance:none;
+background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='9'%3E%3Cpath d='M1 1l6 6 6-6' stroke='%23d4af37' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+background-repeat:no-repeat;background-position:right 16px center;
+cursor:pointer;
+}
+select option{background:#111;color:#fff;}
+
+/* BUTTON GOLD */
+.btn-gold{
+width:100%;
+background:linear-gradient(135deg,var(--gold-soft),var(--gold));
+color:#1a1305;
+border:none;border-radius:12px;
+padding:17px;font-family:'Montserrat',sans-serif;font-size:1rem;font-weight:800;
+letter-spacing:0.3px;cursor:pointer;
+box-shadow:0 0 30px -6px rgba(212,175,55,0.6);
+transition:all .2s ease;
+margin-top:6px;
+}
+.btn-gold:hover:not(:disabled){box-shadow:0 0 40px -4px rgba(212,175,55,0.8);filter:brightness(1.05);}
+.btn-gold:active:not(:disabled){transform:scale(0.98);}
+.btn-gold:disabled{opacity:0.75;cursor:not-allowed;}
+
+.err-msg{
+display:none;margin-top:14px;background:rgba(255,80,80,0.08);
+border:1px solid rgba(255,80,80,0.35);color:#ff8080;
+padding:12px 14px;border-radius:10px;font-size:0.82rem;text-align:center;
+}
+
+/* CARD RESULT (pergaminho de luxo) */
+#card-result{display:none;}
+.luxury-card{
+background:var(--black-pure);
+border:2px dotted rgba(212,175,55,0.55);
+border-radius:4px;
+padding:34px 26px;
+position:relative;
+box-shadow:0 0 50px -8px rgba(212,175,55,0.25), inset 0 0 40px rgba(212,175,55,0.03);
+}
+.luxury-card::before{
+content:'';position:absolute;inset:8px;
+border:1px solid rgba(212,175,55,0.25);
+border-radius:2px;pointer-events:none;
+}
+.card-eyebrow{
+text-align:center;color:var(--gold);font-size:0.72rem;
+letter-spacing:3px;font-weight:700;margin-bottom:18px;text-transform:uppercase;
+}
+.card-to{text-align:center;color:rgba(255,255,255,0.5);font-size:0.85rem;letter-spacing:1px;margin-bottom:4px;text-transform:uppercase;}
+.card-nome{
+text-align:center;font-family:'Playfair Display',serif;font-style:italic;
+color:var(--gold-soft);font-size:1.7rem;margin-bottom:22px;
+}
+.card-letter{
+font-family:'Playfair Display',serif;font-style:italic;
+color:#f2f2f2;font-size:1.05rem;line-height:1.85;
+white-space:pre-wrap;text-align:left;
+}
+.card-signoff{
+text-align:center;color:var(--gold-soft);font-family:'Playfair Display',serif;
+font-style:italic;margin-top:24px;font-size:1rem;
+}
+
+.actions-after{margin-top:22px;display:flex;flex-direction:column;gap:12px;}
+.btn-spotify{
+background:var(--spotify);color:#fff;border:none;border-radius:12px;
+padding:15px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:0.92rem;
+cursor:pointer;text-decoration:none;text-align:center;display:block;
+box-shadow:0 0 24px -6px rgba(29,185,84,0.5);
+}
+.btn-print{
+background:var(--white);color:#0a0a0a;border:none;border-radius:12px;
+padding:15px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:0.92rem;
+cursor:pointer;
+}
+
+.footer-note{
+text-align:center;color:rgba(255,255,255,0.3);font-size:0.72rem;
+margin-top:28px;letter-spacing:0.5px;
+}
+
+@media print{
+body{background:#fff !important;padding:0;}
+.brand, .head, .form-card, .actions-after, .footer-note, #loading-overlay{display:none !important;}
+#card-result{display:block !important;}
+.luxury-card{
+box-shadow:none;border:2px dotted #d4af37;background:#fff;
+}
+.card-letter, .card-nome, .card-signoff{color:#111 !important;}
+.card-eyebrow{color:#111 !important;}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<div class="brand">IMPERE</div>
+
+<div id="form-stage">
+<div class="head">
+<h1>Acesso Confirmado</h1>
+<p>Sua IA de Luxo está ativa. Preencha os dados abaixo para esculpir o cartão do seu pai.</p>
+</div>
+
+<div class="form-card">
+<div class="field">
+<label>Nome do Pai</label>
+<input type="text" id="f-nome" placeholder="Ex: Carlos, seu pai, papai...">
+</div>
+
+<div class="field">
+<label>Quais as memórias mais marcantes ou coisas que ele mais ama?</label>
+<textarea id="f-memorias" placeholder="Ex: Ele ama pescar, faz o melhor churrasco, sempre me diz para nunca desistir..."></textarea>
+</div>
+
+<div class="field">
+<label>Tom da Homenagem</label>
+<select id="f-tom">
+<option value="emocionante">Profundamente emocionante (para chorar)</option>
+<option value="divertido">Divertido e bem-humorado</option>
+<option value="serio">Sério e respeitoso</option>
+</select>
+</div>
+
+<div class="field">
+<label>Link de uma música ou playlist do Spotify (opcional)</label>
+<input type="url" id="f-spotify" placeholder="https://open.spotify.com/track/...">
+</div>
+
+<button class="btn-gold" id="btn-gerar" onclick="gerarCartao()">GERAR CARTÃO PREMIUM IMPARÁVEL</button>
+<div class="err-msg" id="err-msg">Não foi possível gerar agora. Verifique os dados e tente novamente.</div>
+</div>
+</div>
+
+<div id="card-result">
+<div class="luxury-card">
+<div class="card-eyebrow">Homenagem Exclusiva</div>
+<div class="card-to">Para</div>
+<div class="card-nome" id="out-nome">—</div>
+<div class="card-letter" id="out-texto">—</div>
+<div class="card-signoff">Com amor, sempre.</div>
+</div>
+
+<div class="actions-after">
+<a href="#" id="btn-spotify" class="btn-spotify" target="_blank" rel="noopener" style="display:none;">🎵 Toque para ouvir a trilha do seu Pai</a>
+<button class="btn-print" onclick="window.print()">Salvar / Imprimir em PDF</button>
+</div>
+</div>
+
+<div class="footer-note">IMPERE © 2026 — Presentes que emocionam</div>
+</div>
+
+<script>
+async function gerarCartao(){
+const nome = document.getElementById('f-nome').value.trim();
+const memorias = document.getElementById('f-memorias').value.trim();
+const tom = document.getElementById('f-tom').value;
+const spotify = document.getElementById('f-spotify').value.trim();
+const btn = document.getElementById('btn-gerar');
+const errMsg = document.getElementById('err-msg');
+
+errMsg.style.display = 'none';
+
+if(!nome || !memorias){
+errMsg.textContent = 'Preencha ao menos o nome e as memórias antes de gerar o cartão.';
+errMsg.style.display = 'block';
+return;
+}
+
+const textoOriginal = btn.textContent;
+btn.disabled = true;
+btn.textContent = 'A IA está esculpindo sua mensagem...';
+
+try{
+const response = await fetch('/.netlify/functions/gerar-carta', {
+method: 'POST',
+headers: { 'Content-Type': 'application/json' },
+body: JSON.stringify({ nome, memorias, tom, spotify })
+});
+
+if(!response.ok){
+throw new Error('Falha na geração: ' + response.status);
+}
+
+const data = await response.json();
+exibirCartao(nome, data.texto, spotify);
+
+}catch(err){
+console.error(err);
+errMsg.textContent = 'Não foi possível gerar agora. Verifique sua conexão e tente novamente.';
+errMsg.style.display = 'block';
+btn.disabled = false;
+btn.textContent = textoOriginal;
+}
+}
+
+function exibirCartao(nome, texto, spotify){
+document.getElementById('out-nome').textContent = nome;
+document.getElementById('out-texto').textContent = texto;
+
+const spotifyBtn = document.getElementById('btn-spotify');
+if(spotify){
+spotifyBtn.href = spotify;
+spotifyBtn.style.display = 'block';
+}
+
+document.getElementById('form-stage').style.display = 'none';
+document.getElementById('card-result').style.display = 'block';
+window.scrollTo({top:0, behavior:'smooth'});
+}
+</script>
+</body>
+</html>
+
+
+
