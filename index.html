@@ -892,39 +892,72 @@ function selectTemplate(el){
   selectedTemplate=el.dataset.t;
 }
 
-/* ===== mock AI-generated letters ===== */
-const mockLetters = {
-  Emocionante: (nome,apelido,momento)=>`Toda vez que penso em você, ${apelido||nome}, lembro daquele dia em que ${momento||'passamos juntos e que carrego no coração'}. Você é a prova de que os melhores exemplos não vêm de palavras, vêm de gestos. Obrigado por cada sacrifício silencioso, por cada "vai dar tudo certo" na hora certa. Hoje quero parar e te dizer o que nem sempre digo: eu te admiro, eu te agradeço, e eu te amo mais do que qualquer carta seria capaz de explicar.`,
-  Leve: (nome,apelido,momento)=>`E aí, ${apelido||nome}! Bora ser sincero: você não é perfeito (aquela piada repetida já não tem mais graça 😂), mas com certeza é insubstituível. Nunca esqueço de ${momento||'quando vivemos aquele momento inesquecível'} — daqueles que a gente lembra rindo até hoje. Obrigado por aguentar meu jeito, por bagunçar meu dia com sua bagunça e por ser, sem dúvida, um dos meus favoritos nessa vida.`,
-  Formal: (nome,apelido,momento)=>`Prezado(a) ${nome}, escrevo estas palavras para expressar minha sincera gratidão. ${momento?('Recordo com carinho de '+momento+'.'):''} Sua presença representou, ao longo dos anos, um exemplo de dedicação e integridade que moldou quem eu sou hoje. Registro aqui meu reconhecimento e admiração, com o respeito e afeto que você merece.`
-};
+/* ===== geração da carta via Netlify Function (chave protegida no servidor) ===== */
+async function gerarCartaComIA(nome, relacao, apelido, momento, admira, tom){
+  const estiloMap = { Emocionante: 'emocionante', Leve: 'divertido', Formal: 'serio' };
+  const caracteristicas = [momento, admira].filter(Boolean).join('. ');
 
-function startGeneration(){
+  const response = await fetch("/.netlify/functions/gerar-carta", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      nomePai: apelido || nome,
+      caracteristicas: caracteristicas || "um pai presente e especial",
+      estilo: estiloMap[tom] || 'emocionante'
+    })
+  });
+
+  if(!response.ok){
+    throw new Error("Falha ao gerar carta: " + response.status);
+  }
+
+  const data = await response.json();
+  return data.texto;
+}
+
+async function startGeneration(){
   showPanel('flow-loading');
   const fill=document.getElementById('load-fill');
   const status=document.getElementById('load-status');
   const messages=['Lendo suas respostas...','Escolhendo as melhores palavras...','Dando o toque final...','Quase pronto...'];
   let pct=0, msgIdx=0;
   status.textContent=messages[0];
-  const interval=setInterval(()=>{
-    pct+=Math.random()*18+8;
-    if(pct>=100){
-      pct=100;
-      clearInterval(interval);
-      setTimeout(()=>{ buildPreview(); showPanel('flow-preview'); window.scrollTo({top:0}); },400);
-    }
-    fill.style.width=pct+'%';
-    const newIdx=Math.min(Math.floor(pct/26),messages.length-1);
-    if(newIdx!==msgIdx){ msgIdx=newIdx; status.textContent=messages[msgIdx]; }
-  },450);
-}
 
-function buildPreview(){
+  const progressInterval=setInterval(()=>{
+    if(pct<90){
+      pct+=Math.random()*10+5;
+      fill.style.width=Math.min(pct,90)+'%';
+      const newIdx=Math.min(Math.floor(pct/26),messages.length-1);
+      if(newIdx!==msgIdx){ msgIdx=newIdx; status.textContent=messages[msgIdx]; }
+    }
+  },450);
+
   const nome=document.getElementById('f-nome').value || 'Pai do mundo';
+  const relacao=document.getElementById('f-relacao').value;
   const apelido=document.getElementById('f-apelido').value;
   const momento=document.getElementById('f-momento').value;
-  const letter=mockLetters[selectedTone] ? mockLetters[selectedTone](nome,apelido,momento) : mockLetters.Emocionante(nome,apelido,momento);
+  const admira=document.getElementById('f-admira').value;
 
+  let letter;
+  try{
+    letter = await gerarCartaComIA(nome, relacao, apelido, momento, admira, selectedTone);
+  }catch(err){
+    console.error(err);
+    letter = `Toda vez que penso em você, ${apelido||nome}, lembro dos momentos que carrego no coração. Obrigado por ser meu exemplo. Eu te admiro, eu te agradeço, e eu te amo mais do que qualquer carta seria capaz de explicar.`;
+    showToast('Não foi possível gerar pela IA agora — usando texto padrão.');
+  }
+
+  clearInterval(progressInterval);
+  fill.style.width='100%';
+  status.textContent='Pronto!';
+
+  window._generatedLetter = letter;
+  window._generatedNome = nome;
+
+  setTimeout(()=>{ buildPreview(letter, nome); showPanel('flow-preview'); window.scrollTo({top:0}); },400);
+}
+
+function buildPreview(letter, nome){
   document.getElementById('pv-nome').textContent=nome;
   document.getElementById('pv-msg').textContent='"'+letter.slice(0,80)+'..."';
 
@@ -932,9 +965,6 @@ function buildPreview(){
   pvPhotos.innerHTML = uploadedPhotos.length
     ? uploadedPhotos.map(src=>`<div class="thumb"><img src="${src}"></div>`).join('')
     : `<div class="thumb"></div><div class="thumb"></div>`;
-
-  window._generatedLetter = letter;
-  window._generatedNome = nome;
 }
 
 function goCheckout(){ showPanel('flow-checkout'); window.scrollTo({top:0}); }
@@ -945,10 +975,8 @@ function selectPay(el){
 }
 
 function finishPayment(){
-  buildFinalPage();
-  showPanel('flow-final');
-  window.scrollTo({top:0});
-  showToast('Pagamento confirmado! Sua carta está pronta 🎉');
+  const linkCheckout = "https://go.pagcheckout.com/checkout?seller=bb3cff71-65d5-4849-a811-40230471a2be&product=ed5b29c8-bcab-423a-87f3-18a9ce958acb";
+  window.location.href = linkCheckout;
 }
 
 function buildFinalPage(){
@@ -982,4 +1010,3 @@ if(uz){
 </script>
 </body>
 </html>
-
